@@ -57,5 +57,5 @@ build/
 *.sqlite3
 *.sql
 
-constants.py
+
 source/Lib
