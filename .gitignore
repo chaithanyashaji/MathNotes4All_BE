@@ -1,0 +1,61 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+logs/
+*.out
+*.err
+
+# Cache files
+*.cache
+*.pytest_cache/
+.cache/
+
+# IDE settings
+.vscode/
+.idea/
+*.sublime*
+
+# Test results
+*.coverage
+coverage/
+*.lcov
+
+# Deployment
+*.pid
+*.egg
+*.egg-info/
+dist/
+build/
+
+# PyInstaller files
+*.manifest
+*.spec
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# Database
+*.db
+*.sqlite3
+*.sql
+
+constants.py
+source
