@@ -14,7 +14,7 @@ app = FastAPI(lifespan=lifespan)
 # Allow both local and deployed frontend URLs
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "https://your-deployed-frontend-url.com"],  # Add your frontend URL here
+    allow_origins=["http://localhost:5173", "https://mathnotes4all.onrender.com/"],  # Add your frontend URL here
 
     allow_credentials=True,
     allow_methods=["*"],
