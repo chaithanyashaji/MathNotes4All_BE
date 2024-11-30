@@ -6,9 +6,15 @@ from constants import GEMINI_API_KEY
 
 genai.configure(api_key=GEMINI_API_KEY)
 
+import ast
+import re
+import json
+
 def analyze_image(img: Image, dict_of_vars: dict):
     model = genai.GenerativeModel(model_name="gemini-1.5-flash")
     dict_of_vars_str = json.dumps(dict_of_vars, ensure_ascii=False)
+    
+    # Prepare the prompt
     prompt = (
         f"You have been given an image with some mathematical expressions, equations, or graphical problems, and you need to solve them. "
         f"Note: Use the PEMDAS rule for solving mathematical expressions. PEMDAS stands for the Priority Order: Parentheses, Exponents, Multiplication and Division (from left to right), Addition and Subtraction (from left to right). Parentheses have the highest priority, followed by Exponents, then Multiplication and Division, and lastly Addition and Subtraction. "
@@ -25,22 +31,40 @@ def analyze_image(img: Image, dict_of_vars: dict):
         f"4. Analyzing Graphical Math problems, which are word problems represented in drawing form, such as cars colliding, trigonometric problems, problems on the Pythagorean theorem, adding runs from a cricket wagon wheel, etc. These will have a drawing representing some scenario and accompanying information with the image. PAY CLOSE ATTENTION TO DIFFERENT COLORS FOR THESE PROBLEMS. You need to return the answer in the format of a LIST OF ONE DICT [{{'expr': given expression, 'result': calculated answer}}]. "
         f"5. Detecting Abstract Concepts that a drawing might show, such as love, hate, jealousy, patriotism, or a historic reference to war, invention, discovery, quote, etc. USE THE SAME FORMAT AS OTHERS TO RETURN THE ANSWER, where 'expr' will be the explanation of the drawing, and 'result' will be the abstract concept. "
         f"Analyze the equation or expression in this image and return the answer according to the given rules: "
-        f"Make sure to use extra backslashes for escape characters like \\f -> \\\\f, \\n -> \\\\n, etc. "
         f"Here is a dictionary of user-assigned variables. If the given expression has any of these variables, use its actual value from this dictionary accordingly: {dict_of_vars_str}. "
         f"DO NOT USE BACKTICKS OR MARKDOWN FORMATTING. "
         f"PROPERLY QUOTE THE KEYS AND VALUES IN THE DICTIONARY FOR EASIER PARSING WITH Python's ast.literal_eval."
     )
+    
+    # Generate content
     response = model.generate_content([prompt, img])
-    print(response.text)
+    print(f"Raw response: {response.text}")
+
+    # Clean and parse the response
+    cleaned_response = re.sub(r"(?<=\w)([A-Z])", r" \1", response.text)  # Add spacing before uppercase words
+    cleaned_response = re.sub(r"(\d)([a-zA-Z])", r"\1 \2", cleaned_response)  # Add spacing after numbers
+    print(f"Cleaned response: {cleaned_response}")
+
     answers = []
     try:
-        answers = ast.literal_eval(response.text)
+        answers = ast.literal_eval(cleaned_response)
     except Exception as e:
-        print(f"Error in parsing response from Gemini API: {e}")
-    print('returned answer ', answers)
+        print(f"Error parsing response: {e}")
+        print(f"Fallback raw response: {cleaned_response}")
+        return []
+
+    # Post-process answers for proper formatting
     for answer in answers:
         if 'assign' in answer:
             answer['assign'] = True
         else:
             answer['assign'] = False
+
+        # Ensure proper spacing in 'expr' and 'result'
+        if 'expr' in answer and isinstance(answer['expr'], str):
+            answer['expr'] = re.sub(r"\s+", " ", answer['expr']).strip()  # Normalize spaces
+        if 'result' in answer and isinstance(answer['result'], str):
+            answer['result'] = re.sub(r"\s+", " ", answer['result']).strip()  # Normalize spaces
+
+    print(f"Final processed answers: {answers}")
     return answers
