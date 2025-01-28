@@ -9,22 +9,22 @@ from apps.calculator.route import router as calculator_router
 # Load environment variables
 PORT = int(os.getenv("PORT", 8000))  # Default to 8000 if not provided
 ENV = os.getenv("ENV", "production")  # Default to 'production'
-SERVER_URL = os.getenv("SERVER_URL", "http://localhost")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan context manager for the app."""
-    yield  # Add any setup/teardown logic here if needed
+    yield  # Add setup/teardown logic here if needed
 
-# Initialize FastAPI application with lifespan
+# Initialize FastAPI application
 app = FastAPI(lifespan=lifespan)
 
-# Configure CORS to allow requests from the frontend
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",  # Local frontend for development
-        "https://mathnotes-nine.vercel.app"  # Deployed frontend
+        "http://localhost:5173",  # Local development frontend
+        "https://mathnotes-nine.vercel.app",  # Frontend URL
+        "https://mathnotes4allbe-production.up.railway.app"  # Backend URL for testing
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -64,5 +64,5 @@ if __name__ == "__main__":
         "main:app",  # Points to the app instance in this file
         host="0.0.0.0",  # Listen on all available interfaces
         port=PORT,  # Use the dynamic port from environment variables
-        reload=(ENV == "dev")  # Enable reload in development mode
+        reload=(ENV == "development")  # Enable reload in development mode
     )
