@@ -7,24 +7,23 @@ import os
 from apps.calculator.route import router as calculator_router
 
 # Load environment variables
-PORT = int(os.getenv("PORT", 8000))  # Default to 8000 if not provided
+PORT = int(os.getenv("PORT", 8000))  # Railway will provide PORT
 ENV = os.getenv("ENV", "production")  # Default to 'production'
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Lifespan context manager for the app."""
-    yield  # Add setup/teardown logic here if needed
+    """Lifespan context manager for setup/teardown logic."""
+    yield
 
 # Initialize FastAPI application
 app = FastAPI(lifespan=lifespan)
 
-# Configure CORS
+# Configure CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",  # Local development frontend
-        "https://mathnotes-nine.vercel.app",  # Frontend URL
-        "https://mathnotes4allbe-production.up.railway.app"  # Backend URL for testing
+        "http://localhost:5173",  # Local frontend for development
+        "https://mathnotes4allbe-production.up.railway.app"  # Deployed backend on Railway
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -48,11 +47,11 @@ async def self_ping():
             print("[Self-Ping] pong")  # Log a self-ping message
         except Exception as e:
             print(f"[Self-Ping Error] {e}")
-        await asyncio.sleep(300)  # Wait for 5 minutes (300 seconds)
+        await asyncio.sleep(300)  # Wait for 5 minutes
 
 @app.on_event("startup")
 async def startup_event():
-    """Start the self-ping task on server startup."""
+    """Start self-ping task on server startup."""
     asyncio.create_task(self_ping())
 
 # Include the calculator router
@@ -61,8 +60,7 @@ app.include_router(calculator_router, prefix="/calculate", tags=["calculate"])
 if __name__ == "__main__":
     # Run the FastAPI application with Uvicorn
     uvicorn.run(
-        "main:app",  # Points to the app instance in this file
+        "main:app",
         host="0.0.0.0",  # Listen on all available interfaces
-        port=PORT,  # Use the dynamic port from environment variables
-        reload=(ENV == "development")  # Enable reload in development mode
+        port=PORT  # Dynamic port for Railway
     )
