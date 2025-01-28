@@ -48,4 +48,10 @@ app.include_router(calculator_router, prefix="/calculate", tags=["calculate"])
 
 if __name__ == "__main__":
     # Ensure SERVER_URL is 0.0.0.0 in production for external access
-    uvicorn.run("main:app", host="0.0.0.0", port=int(PORT), reload=(ENV == "dev"))
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=int(PORT),
+        reload=True if ENV == "dev" else False  # Reload only in development mode
+    )
+
