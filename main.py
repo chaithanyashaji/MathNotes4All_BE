@@ -38,15 +38,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 async def root():
     """Root endpoint to verify the server is running."""
     return {"message": "Server is running"}
 
+
 @app.get("/ping")
 async def ping():
-    """Health check endpoint."""
+    """Ping endpoint for simple health check."""
     return {"message": "pong"}
+
 
 @app.get("/health")
 async def health():
@@ -69,7 +72,7 @@ async def startup_event():
     """Start keep-alive and self-ping tasks on server startup."""
     logging.info("Starting background tasks...")
     asyncio.create_task(keep_alive())  # Keeps the event loop alive
-    asyncio.create_task(self_ping())  # Self-ping
+    asyncio.create_task(self_ping())  # Self-ping task
 
 
 async def self_ping():
@@ -92,4 +95,5 @@ if __name__ == "__main__":
         "main:app",  # Reference the app instance
         host="0.0.0.0",  # Listen on all available interfaces
         port=PORT,  # Use the dynamic port provided by Railway
+        log_level="info"  # Set the logging level
     )
