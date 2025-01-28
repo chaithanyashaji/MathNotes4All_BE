@@ -7,7 +7,7 @@ import os
 from apps.calculator.route import router as calculator_router
 
 # Load environment variables
-PORT = os.getenv("PORT", 8000)  # Default to 8000 if not provided
+PORT = int(os.getenv("PORT", 8000))  # Default to 8000 if not provided
 ENV = os.getenv("ENV", "production")  # Default to 'production'
 SERVER_URL = os.getenv("SERVER_URL", "http://localhost")
 
@@ -23,9 +23,8 @@ app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",  # Local frontend
-        "https://mathnotes-nine.vercel.app",  # Deployed frontend
-        "https://mathnotes-nine.vercel.app"  # Backend URL
+        "http://localhost:5173",  # Local frontend for development
+        "https://mathnotes-nine.vercel.app"  # Deployed frontend
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -64,6 +63,6 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",  # Points to the app instance in this file
         host="0.0.0.0",  # Listen on all available interfaces
-        port=int(PORT),  # Use the dynamic port from environment variables
-        reload=True if ENV == "dev" else False  # Enable reload in development mode
+        port=PORT,  # Use the dynamic port from environment variables
+        reload=(ENV == "dev")  # Enable reload in development mode
     )
