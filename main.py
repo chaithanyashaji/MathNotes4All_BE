@@ -11,7 +11,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 # Load environment variables
-PORT = int(os.getenv("PORT", 8000))  # Railway will provide PORT
+PORT = int(os.getenv("PORT", 8000))  # Railway provides PORT
 ENV = os.getenv("ENV", "production")  # Default to 'production'
 
 
@@ -31,7 +31,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",  # Local frontend for development
-        "https://mathnotes4allbe-production.up.railway.app"  # Deployed backend on Railway
+        "https://mathnotes4allbe-production.up.railway.app",  # Deployed backend on Railway
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -47,7 +47,7 @@ async def root():
 
 @app.get("/ping")
 async def ping():
-    """Ping endpoint for simple health check."""
+    """Ping endpoint for a simple health check."""
     return {"message": "pong"}
 
 
@@ -64,14 +64,14 @@ async def keep_alive():
             logging.info("[Keep-Alive] Running...")
         except Exception as e:
             logging.error(f"[Keep-Alive Error] {e}")
-        await asyncio.sleep(60)  # Log every 60 seconds
+        await asyncio.sleep(60)  # Keeps the event loop alive
 
 
 @app.on_event("startup")
 async def startup_event():
     """Start keep-alive and self-ping tasks on server startup."""
     logging.info("Starting background tasks...")
-    asyncio.create_task(keep_alive())  # Keeps the event loop alive
+    asyncio.create_task(keep_alive())  # Keeps the app alive
     asyncio.create_task(self_ping())  # Self-ping task
 
 
@@ -95,5 +95,5 @@ if __name__ == "__main__":
         "main:app",  # Reference the app instance
         host="0.0.0.0",  # Listen on all available interfaces
         port=PORT,  # Use the dynamic port provided by Railway
-        log_level="info"  # Set the logging level
+        log_level="info",  # Set the logging level
     )
