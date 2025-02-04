@@ -10,7 +10,7 @@ from constants import ENV
 async def lifespan(app: FastAPI):
     yield
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 # Allow both local and deployed frontend URLs
 app.add_middleware(
