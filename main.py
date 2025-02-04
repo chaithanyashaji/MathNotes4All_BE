@@ -2,17 +2,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
-import os
 import uvicorn
 from apps.calculator.route import router as calculator_router
 import logging
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
-
-# Load environment variables
-PORT = int(os.getenv("PORT", 8000))  # Railway provides PORT
-ENV = os.getenv("ENV", "production")  # Default to 'production'
 
 # Track background tasks for graceful shutdown
 tasks = []
@@ -30,7 +25,7 @@ app = FastAPI(lifespan=lifespan)
 # Configure CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("CORS_ORIGINS", "").split(",") or [
+    allow_origins=[
         "http://localhost:5173",  # Local frontend for development
         "https://mathnotes4allbe-production.up.railway.app",  # Deployed backend on Railway
     ],
@@ -90,6 +85,6 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",  # Reference the app instance
         host="0.0.0.0",  # Listen on all available interfaces
-        port=PORT,  # Use the dynamic port provided by Railway
+        port=8080,  # Use port 8080 as required by Railway
         log_level="info",  # Set the logging level
     )
