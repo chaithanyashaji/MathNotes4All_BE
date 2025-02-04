@@ -14,6 +14,8 @@ logging.basicConfig(level=logging.INFO)
 PORT = int(os.getenv("PORT", 8000))  # Railway provides PORT
 ENV = os.getenv("ENV", "production")  # Default to 'production'
 
+# Track background tasks for graceful shutdown
+tasks = []
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -22,14 +24,13 @@ async def lifespan(app: FastAPI):
     yield
     logging.info("Application is shutting down...")
 
-
 # Initialize FastAPI application
 app = FastAPI(lifespan=lifespan)
 
 # Configure CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
+    allow_origins=os.getenv("CORS_ORIGINS", "").split(",") or [
         "http://localhost:5173",  # Local frontend for development
         "https://mathnotes4allbe-production.up.railway.app",  # Deployed backend on Railway
     ],
@@ -38,24 +39,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.get("/")
 async def root():
     """Root endpoint to verify the server is running."""
     return {"message": "Server is running"}
 
-
-@app.get("/ping")
-async def ping():
-    """Ping endpoint for a simple health check."""
-    return {"message": "pong"}
-
-
 @app.get("/health")
 async def health():
-    """Health check endpoint for Railway."""
-    return {"status": "healthy"}
-
+    """Consolidated health check endpoint."""
+    return {"status": "healthy", "ping": "pong"}
 
 async def keep_alive():
     """Keep the event loop alive."""
@@ -63,17 +55,8 @@ async def keep_alive():
         try:
             logging.info("[Keep-Alive] Running...")
         except Exception as e:
-            logging.error(f"[Keep-Alive Error] {e}")
+            logging.exception("[Keep-Alive Error]")
         await asyncio.sleep(60)  # Keeps the event loop alive
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Start keep-alive and self-ping tasks on server startup."""
-    logging.info("Starting background tasks...")
-    asyncio.create_task(keep_alive())  # Keeps the app alive
-    asyncio.create_task(self_ping())  # Self-ping task
-
 
 async def self_ping():
     """Periodically logs a self-ping message every 5 minutes."""
@@ -81,13 +64,26 @@ async def self_ping():
         try:
             logging.info("[Self-Ping] pong")  # Log a self-ping message
         except Exception as e:
-            logging.error(f"[Self-Ping Error] {e}")
+            logging.exception("[Self-Ping Error]")
         await asyncio.sleep(300)  # Wait for 5 minutes
 
+@app.on_event("startup")
+async def startup_event():
+    """Start background tasks on server startup."""
+    logging.info("Starting background tasks...")
+    keep_alive_task = asyncio.create_task(keep_alive())
+    self_ping_task = asyncio.create_task(self_ping())
+    tasks.extend([keep_alive_task, self_ping_task])
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cancel background tasks on server shutdown."""
+    logging.info("Shutting down background tasks...")
+    for task in tasks:
+        task.cancel()
 
 # Include the calculator router
 app.include_router(calculator_router, prefix="/calculate", tags=["calculate"])
-
 
 if __name__ == "__main__":
     # Run the FastAPI application with Uvicorn
