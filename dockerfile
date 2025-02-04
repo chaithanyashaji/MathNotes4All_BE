@@ -1,20 +1,17 @@
-# Use an official Python runtime as a parent image
+# Use the Python 3 alpine official image
 FROM python:3.10-slim
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the requirements file into the container
-COPY requirements.txt .
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the entire app code into the container
+# Copy local code to the container image
 COPY . .
 
-# Expose the port that Railway dynamically assigns
+# Install project dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Expose the port that the app will listen on
 EXPOSE 8000
 
-# Command to run the application
+# Run the web service on container startup
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
