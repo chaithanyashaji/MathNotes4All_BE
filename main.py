@@ -37,5 +37,6 @@ app.include_router(calculator_router, prefix="/calculate", tags=["calculate"])
 
 if __name__ == "__main__":
     # Railway dynamically assigns PORT, use `os.environ`
-    port = int(os.getenv("PORT", 8080))  # Default to 8080 if PORT is not set
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=(ENV == "dev"))
+    port = int(os.getenv("PORT", 8080))  # Defaults to 8080 locally if PORT is not set
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
+
