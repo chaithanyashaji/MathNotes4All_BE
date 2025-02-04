@@ -17,7 +17,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173", 
-        os.getenv("FRONTEND_URL", "https://your-deployed-frontend-url.com")  # Fallback to default if not set
+        os.getenv("FRONTEND_URL")  # Fallback to default if not set
     ],  
     allow_credentials=True,
     allow_methods=["*"],
@@ -36,7 +36,6 @@ async def health():
 app.include_router(calculator_router, prefix="/calculate", tags=["calculate"])
 
 if __name__ == "__main__":
-    # Railway dynamically assigns PORT, use `os.environ`
-    port = int(os.getenv("PORT", 8080))  # Defaults to 8080 locally if PORT is not set
+    port = int(os.getenv("PORT", 8000))  # Default to 8000 for local testing
     uvicorn.run("main:app", host="0.0.0.0", port=port)
 
